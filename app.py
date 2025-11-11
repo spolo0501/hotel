@@ -196,22 +196,23 @@ try:
     )
 
     from datetime import timedelta
-    today = datetime.now().date()
 
+    # 使用數據的最後日期而不是今天
     if time_preset == "最近 30 天":
-        start_date = max(today - timedelta(days=30), min_date)
+        start_date = max(max_date - timedelta(days=30), min_date)
         end_date = max_date
     elif time_preset == "最近 3 個月":
-        start_date = max(today - timedelta(days=90), min_date)
+        start_date = max(max_date - timedelta(days=90), min_date)
         end_date = max_date
     elif time_preset == "最近 6 個月":
-        start_date = max(today - timedelta(days=180), min_date)
+        start_date = max(max_date - timedelta(days=180), min_date)
         end_date = max_date
     elif time_preset == "最近 1 年":
-        start_date = max(today - timedelta(days=365), min_date)
+        start_date = max(max_date - timedelta(days=365), min_date)
         end_date = max_date
     elif time_preset == "今年":
-        start_date = max(datetime(today.year, 1, 1).date(), min_date)
+        # 使用數據最後日期的年份
+        start_date = max(datetime(max_date.year, 1, 1).date(), min_date)
         end_date = max_date
     elif time_preset == "全部":
         start_date = min_date
@@ -484,30 +485,34 @@ try:
         # 雷達圖
         radar_df = dimension_df[dimension_df['平均分數'].notna()]
 
-        fig5 = go.Figure()
+        # 檢查是否有數據
+        if len(radar_df) > 0:
+            fig5 = go.Figure()
 
-        fig5.add_trace(go.Scatterpolar(
-            r=radar_df['平均分數'].tolist() + [radar_df['平均分數'].tolist()[0]],
-            theta=radar_df['維度'].tolist() + [radar_df['維度'].tolist()[0]],
-            fill='toself',
-            name='平均分數',
-            line=dict(color='#667eea', width=2),
-            fillcolor='rgba(102, 126, 234, 0.4)'
-        ))
+            fig5.add_trace(go.Scatterpolar(
+                r=radar_df['平均分數'].tolist() + [radar_df['平均分數'].tolist()[0]],
+                theta=radar_df['維度'].tolist() + [radar_df['維度'].tolist()[0]],
+                fill='toself',
+                name='平均分數',
+                line=dict(color='#667eea', width=2),
+                fillcolor='rgba(102, 126, 234, 0.4)'
+            ))
 
-        fig5.update_layout(
-            polar=dict(
-                radialaxis=dict(
-                    visible=True,
-                    range=[-1, 1]
-                )
-            ),
-            showlegend=False,
-            title='各維度評分雷達圖',
-            height=400
-        )
+            fig5.update_layout(
+                polar=dict(
+                    radialaxis=dict(
+                        visible=True,
+                        range=[-1, 1]
+                    )
+                ),
+                showlegend=False,
+                title='各維度評分雷達圖',
+                height=400
+            )
 
-        st.plotly_chart(fig5, use_container_width=True)
+            st.plotly_chart(fig5, use_container_width=True)
+        else:
+            st.warning("⚠️ 篩選後沒有足夠的數據顯示雷達圖")
 
     st.markdown("---")
 
